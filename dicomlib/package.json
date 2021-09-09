@@ -1,0 +1,15 @@
+{
+  "name": "endomwl",
+  "version": "1.0.0",
+  "description": "mwl scu for endoscopy in ANDES",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "moment": "^2.29.1",
+    "node-fetch": "^2.6.1"
+  }
+}
