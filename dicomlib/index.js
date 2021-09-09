@@ -32,6 +32,7 @@ async function stowrs(host,url,rmethod,rheader,rbody){
 async function main(){
     if (modo===undefined){
         console.log('Especificar modo')
+        console.log(pacsConfig.auth)
     }
     else{
         const token = await login(pacsConfig.auth.host,pacsConfig.auth.url,'POST',
