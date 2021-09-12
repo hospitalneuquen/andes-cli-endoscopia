@@ -43,7 +43,15 @@ async function main(){
                     grant_type: pacsConfig.auth.grant_type,
                     client_id: pacsConfig.auth.clientId,
                     client_secret: pacsConfig.auth.clientSecret 
-                }).then (token=>token.access_token);
+                }).then (token=>token.access_token)
+                .catch(error => {
+                    console.error('esto fallo man\n\n'+error)
+                    const fs = require('fs');
+                        fs.writeFile('output\\salida.json','error', (err) => { 
+                    // In case of a error throw err. 
+                        if (err) throw err; 
+                        })
+                });;
         switch (modo) {
             case 'mwl':
               //Declaraciones ejecutadas cuando el resultado de expresión coincide con el valor1
