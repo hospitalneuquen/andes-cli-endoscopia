@@ -73,7 +73,7 @@ async function main(){
                         })
                     }   
                 break;}
-            case 'patient':
+            case 'patient': //return birthdate of a patient by id
                 const id = process.argv[3];
                 if (id===undefined){console.log('Error')}
                     else{
