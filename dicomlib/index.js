@@ -30,16 +30,9 @@ async function stowrs(host,url,rmethod,rheader,rbody){
     }).then((res)=>res.json()).then(res=>console.log(res));
 };
 
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-  
-
-
 async function main(){
     if (modo===undefined){
         console.log('Especificar modo')
-        console.log(pacsConfig.auth)
     }
     else{
         const token = await login(pacsConfig.auth.host,pacsConfig.auth.url,'POST',
@@ -121,7 +114,9 @@ async function main(){
                     const fs = require('fs');
                     let rawdata = fs.readFileSync(path+'sps.json');
                     let sps = JSON.parse(rawdata);
-                    const url2=pacsConfig.pacs.urlmwl+`/${sps["0020000D"].Value[0]}/${sps['00400100'].Value[0]["00400009"].Value[0]}/status/STARTED/`;
+                    sps=sps[0]
+                    console.log(sps["400100"].Value[0]["400009"].Value[0] )
+                    const url2=pacsConfig.pacs.urlmwl+`/${sps["0020000D"].Value[0]}/${sps['400100'].Value[0]["400009"].Value[0]}/status/STARTED/`;
                     const list= await mppsstarted(pacsConfig.pacs.host,url2,'POST',
                         {
                             'accept': "application/json",
