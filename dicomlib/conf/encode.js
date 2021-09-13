@@ -48,7 +48,7 @@ module.exports = {
         '00080050': {
             vr: 'SH',
             Value: [
-                sps['00080050'].Value[0]
+                sps['80050'].Value[0]
             ],
         },
         '00080060': {
@@ -66,7 +66,7 @@ module.exports = {
         '00080090': {
             vr: 'PN',
             Value: [
-                sps['00400100'].Value[0]['00400006'].Value[0].Alphabetic
+                sps['400100'].Value[0]['400006'].Value[0].Alphabetic
             ]
         },
         '0008103E': {
@@ -78,13 +78,13 @@ module.exports = {
         '00100010': {
             vr: 'PN',
             Value: [
-                sps['00100010'].Value[0].Alphabetic
+                sps['100010'].Value[0].Alphabetic
             ]
         },
         '00100020': {
             vr: 'LO',
             Value: [
-                sps['00100020'].Value[0]
+                sps['100020'].Value[0]
             ]
         },
         '0020000D': {
