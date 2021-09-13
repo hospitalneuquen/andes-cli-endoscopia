@@ -19,5 +19,9 @@ Computer with video capture device is located alogn with endoscopic device, and 
 
 ## Instalación
 
+pkg -t win .\index.js -o dicomlib.exe
+
+pkg -t win .\index.js -o imgconv.exe
+
 ### Instalar dependencias
 
