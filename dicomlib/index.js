@@ -134,19 +134,22 @@ async function main(){
                     let rawdata = fs.readFileSync(path+'sps.json');
                     let sps = JSON.parse(rawdata);
                     let i=1;
-                    const metadata= [];                
+                    const metadata= [];
+                    sps=sps[0]                
                     process.argv.slice(4).forEach(filename=> {//recorre cada uno de los archivos de entrada, ie cada imagen a dicomizar
                         metadapart= dicomencode.dicomencode(sps,i,filename);//codifica el obj json+dicom para esa imagen
                         i++;
                         metadata.push(metadapart);//adjunta al arreglo 
-                    });  
+                    });
+                    console.log(metadata[0])  
                     if (i>1){//aca arma el boundary en un buffer
                         var bodyBuffer = Buffer.from("\r\n--myboundary\r\nContent-Type: application/dicom+json\r\n\r\n"+JSON.stringify(metadata)+"\r\n");
                         for (let j = 1; j < i; j++) {
-                            mimefile= Buffer.from(`\r\n--myboundary\r\nContent-Type: image/jpeg\r\nContent-Location: ${process.argv[2+j]}\r\n\r\n`);
-                            stream = fs.readFileSync(process.argv[2+j]);
-                            console.log(process.argv[2+j])
+                            mimefile= Buffer.from(`\r\n--myboundary\r\nContent-Type: image/jpeg\r\nContent-Location: ${process.argv[3+j]}\r\n\r\n`);
+                            stream = fs.readFileSync(process.argv[3+j]);
+                            console.log(process.argv[3+j])
                             bodyBuffer=Buffer.concat([bodyBuffer,mimefile,stream]);
+                            console.log(bodyBuffer)
                         };
                         bodyBuffer = Buffer.concat([bodyBuffer,Buffer.from('\r\n--myboundary--')]);
                         const stow= stowrs(pacsConfig.pacs.host,pacsConfig.pacs.urlstow,'POST',
