@@ -1,0 +1,1 @@
+{"message":"request to https://pacshpn.andes.gob.ar/dcm4chee-arc/aets/PACSHPN/rs/studies failed, reason: getaddrinfo ENOTFOUND pacshpn.andes.gob.ar","type":"system","errno":"ENOTFOUND","code":"ENOTFOUND"}

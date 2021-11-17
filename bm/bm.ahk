@@ -7,24 +7,35 @@ SendMode, Input
 
 global prestacion:= []
 global PacienteSeleccionado = 0
+global outpath= "d:\scripts\output\"
+global  iniciado:= False
+global recording := False
 
 
-FileDelete, D:\salida.json
+FileDelete, %outpath%salida.json
 FormatTime, fecha , % A_Now , yyyyMMdd
 ;MsgBox % fecha
-Run "D:\dicomlib.exe" "mwl" %fecha%
-sleep 1000
-FileRead , jsonStr,  *P65001 D:\salida.json
-Mwl := JSON.Load(jsonStr)
+
 
 ; alt+1
 !1::
 	if not WinExist("Endoscopia - Nuevo Estudio")
     {
+		Run "D:\scripts\dicomlib.exe" "mwl" %outpath% %fecha% 
+		sleep 1000
+		FileRead , jsonStr,  *P65001 %outpath%salida.json
+		Mwl := JSON.Load(jsonStr)
+		if Mwl = error
+		{
+			
+			MsgBox, 4096 ,,  Worklist no disponible
+		}
+		
+		DetectHiddenWindows, Off
 		Gui, +AlwaysOnTop +ToolWindow
-		Gui, Add, Picture, w100 h-1, d:\logo.png
+		Gui, Add, Picture, w100 h-1, d:\res\logo.png
 		Gui,Font, s14 Bold
-		Gui, Add, Text,xp+120 ys-0, Registro de Procedimientos de Endoscopia
+		Gui, Add, Text,xp+120 ys-0, Registro de Procedimientos de Endoscopia1
 		Gui, Add, Text,xp+0 ys+25, Aplicaciones Neuquinas de Salud
 		Gui,Font, s12 Normal
 		Gui,Font, s14 Bold
@@ -44,6 +55,8 @@ Mwl := JSON.Load(jsonStr)
 		LV_ModifyCol(1, "270")
 		LV_ModifyCol(2, "80 Center")
 		LV_ModifyCol(3, "45 Center")
+		GuiControl, Focus, vList
+		LV_Modify(1, "+Select +Focus")
         Gui, Add, Button,xp+15 ys+165, Iniciar 
 		Gui, Add, Button,xp+155 ys+165, Refrescar
         Gui,Font, s14 Bold
@@ -79,6 +92,8 @@ Mwl := JSON.Load(jsonStr)
 		Gui, Add, Text,xp+50 w100 vSex,
 		Gui, Add, Button,xs, Cerrar				
 		Gui, Show,, Endoscopia - Nuevo Estudio
+		WinWaitClose, Endoscopia - Nuevo Estudio
+		Gui, Destroy 
 
     }
 
@@ -110,9 +125,9 @@ ButtonRefrescar:
 	LV_Delete()
 	Gui, Submit, NoHide
 	FormatTime, fecha , % MyDateTime , yyyyMMdd    
-	Run "D:\dicomlib.exe" "mwl" %fecha%
+	Run "D:\scripts\dicomlib.exe" "mwl" %outpath% %fecha% 
 	Sleep 1000
-	FileRead , jsonStr,  *P65001 D:\salida.json
+	FileRead , jsonStr,  *P65001 %outpath%salida.json
 	Mwl := JSON.Load(jsonStr)
 	for i, obj in Mwl
 		{
@@ -122,6 +137,7 @@ ButtonRefrescar:
 	LV_ModifyCol(1, "265")
 	LV_ModifyCol(2, "90 Center")
 	LV_ModifyCol(3, "45 Center")
+	LV_Modify(1, "+Select +Focus")
 return
 
 
@@ -130,46 +146,63 @@ ButtonCerrar:
     Gui, Destroy
 return
 
-elegirimagenes(path)
-{
-	Loop, %path%, d
+elegirimagenes(dirpath)
+{1
+;	MsgBox, 4096 ,, "entro en elegir"
+	;MsgBox, 4096 ,,  %dirpath%
+	i:=1
+	Loop, %dirpath%*.jpeg
 	{
+;		MsgBox, 4096 ,, "entro en loop"
 		Gui, +AlwaysOnTop +ToolWindow
-		Gui, Add, Picture, w100 h-1, d:\logo.png
+		Gui, Add, Picture, w100 h-1, d:\res\logo.png
 		Gui,Font, s14 Bold
 		Gui, Add, Text,xp+120 ys-0, Registro de Procedimientos de Endoscopia
 		Gui, Add, Text,xp+0 ys+25, Aplicaciones Neuquinas de Salud
 		Gui,Font, s12 Normal
-
 		Gui, Add, Picture,xp-120 ys+70 , %A_LoopFileFullPath%
-		Gui +OwnDialogs
+;		Gui +OwnDialogs
 		Gui, Show,, Endoscopia - Seleccionar imagenes
-		SetTimer, WinMoveMsgBox, 50
+		;SetTimer, WinMoveMsgBox, 50
 		;MsgBox, 4096, , Text
 		MsgBox , 4131 ,Title , Desea Enviar a PACS? Cancelar para finalizar el proceso general
 		WinMove, img_select.ahk ,,0, 0
+;MsgBox, 4096 ,, "entro de destroy"
 		Gui, Destroy
+;				MsgBox, 4096 ,, "despues destroy"
 		IfMsgBox, Cancel
 			break
 		IfMsgBox, Yes
 			{
-			;MsgBox, 4096 ,,  % A_LoopFileShortName
-			imagenes .= A_LoopFileName " "
+			;MsgBox, 4096 ,,  %A_LoopFileFullPath%
+			;imagenes .= "%A_LoopFileFullPath%" " "
+			a=%A_LoopFileFullPath%
+			Run, "D:\scripts\dicomlib.exe" "stow" %outpath% "D:\scripts\output\sps.json" "%i%" "%a%"
+			i++
 			;imagenes:= %A_LoopFileShortName%
 		}
 	}
-	;Run "D:\dicomlib.exe" "stow" %imagenes%
+	iniciado:=False
+	;MsgBox, 4096 ,, %imagenes%
+	;Run, "D:\scripts\dicomlib.exe" "stow" %outpath% "D:\scripts\output\sps.json" %imagenes%
+	;return
 }
 WinMoveMsgBox:
   SetTimer, WinMoveMsgBox, OFF
   WinMove, Title, , 50, 450
+return
 
 ButtonIniciar:
-	FileDelete, sps.json
-	FileAppend , % "[" JSON.Dump(Mwl[PacienteSeleccionado])  . "]" , d:\sps.json
+	iniciado:=True
+	;MsgBox, 4096 ,, "empieza iniciar"
+	LV_Delete()
+	FileDelete, %outpath%sps.json
+	;MsgBox, 4096 ,, "antes de escribir"
+	FileAppend , % "[" JSON.Dump(Mwl[PacienteSeleccionado])  . "]" , %outpath%sps.json
+	;MsgBox, 4096 ,, "despues de escribir"
 	if (PacienteSeleccionado > 0)
 	{
-		;Run "D:\dicomlib.exe" "sps"
+		Run "D:\scripts\dicomlib.exe" "sps" %outpath% %outpath%sps.json
 		Gui, Destroy
 		WinClose, ahk_exe MediaExpress.exe
 		WinWaitClose, ahk_exe MediaExpress.exe
@@ -179,10 +212,10 @@ ButtonIniciar:
 		drive:= "D:"
 		sep:="\"
 		estudio:= A_Now
-		path= %drive%%sep%%paciente%%sep%%estudio%
-		Run "D:\mkdir.bat" %path%
+		path= %drive%%sep%patients%sep%%paciente%%sep%%estudio%
+		Run "D:\scripts\mkdir.bat" %path%
 		Run MediaExpress.exe
-		Sleep 2000
+		Sleep 1000
 		WinActivate, ahk_exe MediaExpress.exe
 		WinWaitActive, ahk_exe MediaExpress.exe
 		send, ^s
@@ -192,17 +225,69 @@ ButtonIniciar:
 		Sleep 1000
 		send, ^,
 		Sleep 1000
-		send, `t`t
+		send, `t
 		send, %path%%sep%video
 		send, `t`t
 		send, %path%%sep%img
 		send, `t`t`t`t`t`t{Enter}
 		PacienteSeleccionado := 0
+		Sleep 1000
+		send, ^1
 		WinWaitClose, ahk_exe MediaExpress.exe
-		path = %drive%%sep%%paciente%%sep%%estudio%%sep%img
-		;Run "D:\imgconv.exe" %path%
-		path = %drive%%sep%%paciente%%sep%%estudio%%sep%img%sep%*.jpeg
+		path = %drive%%sep%patients%sep%%paciente%%sep%%estudio%%sep%img
+		RunWait "D:\scripts\imgconv.exe" %path%
+		path = %drive%%sep%patients%sep%%paciente%%sep%%estudio%%sep%img%sep%
+		;MsgBox, 4096 ,, "antes de elegir"
 		elegirimagenes(path)
-		return
+		;return
 	}
+return
+
+
+
+
+
+~Space::
+	if iniciado
+	{
+		SoundBeep, 400, 300
+		if (recording){
+			send, {Escape}
+			Sleep 500
+			send, ^g
+			Sleep 500
+			send, ^r
+		}else
+		{
+			
+			send, ^g
+		}
+	}
+return
+
+~r::
+	if iniciado
+	{
+		
+		if (recording){
+			SoundBeep, 2500, 500
+			send, {Escape}
+		}else
+		{
+			SoundBeep, 2500, 1500
+			send, ^r
+		}
+		recording := NOT recording
+	}
+return
+
+
+~p::
+	if iniciado
+	{
+		WinClose, ahk_exe MediaExpress.exe
+		Sleep 500
+		send, `t`t{Enter}
+		
+	}	
 return
